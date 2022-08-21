@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:cuidapet_api/application/logger/i_logger.dart';
+import 'package:cuidapet_api/entities/supplier.dart';
 import 'package:cuidapet_api/modules/chat/view_models/chat_notify_view_model.dart';
 import 'package:injectable/injectable.dart';
 import 'package:shelf/shelf.dart';
@@ -44,6 +45,31 @@ class ChatController {
           {'message': 'Erro ao enviar notificação'},
         ),
       );
+    }
+  }
+
+  @Route.get('/user')
+  Future<Response> fingChatsByUser(Request request) async {
+    try {
+      final user = int.parse(request.headers['user']!);
+      final chats = await service.getChatsByUser(user);
+      final resultChats = chats
+          .map((c) => {
+                'id': c.id,
+                'user': c.user,
+                'name': c.name,
+                'pet_name': c.petName,
+                'supplier': {
+                  'id': c.supplier.id,
+                  'name': c.supplier.name,
+                  'logo': c.supplier.logo,
+                }
+              })
+          .toList();
+      return Response.ok(jsonEncode(resultChats));
+    } catch (e, s) {
+      log.error('Erro ao buscar chats do usuario', e, s);
+      return Response.internalServerError();
     }
   }
 
