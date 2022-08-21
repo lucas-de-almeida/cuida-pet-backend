@@ -75,30 +75,46 @@ class ChatController {
 
   @Route.get('/supplier')
   Future<Response> findChatsBySupplier(Request request) async {
-    final supplier = request.headers['supplier'];
-    if (supplier == null) {
-      return Response(
-        400,
-        body: jsonEncode({'message': 'Usuario logado não é um fornecedor'}),
-      );
-    }
-    final supplierId = int.parse(supplier);
-    final chats = await service.getChatsBySupplier(supplierId);
+    try {
+      final supplier = request.headers['supplier'];
+      if (supplier == null) {
+        return Response(
+          400,
+          body: jsonEncode({'message': 'Usuario logado não é um fornecedor'}),
+        );
+      }
+      final supplierId = int.parse(supplier);
+      final chats = await service.getChatsBySupplier(supplierId);
 
-    final resultChats = chats
-        .map((c) => {
-              'id': c.id,
-              'user': c.user,
-              'name': c.name,
-              'pet_name': c.petName,
-              'supplier': {
-                'id': c.supplier.id,
-                'name': c.supplier.name,
-                'logo': c.supplier.logo,
-              }
-            })
-        .toList();
-    return Response.ok(jsonEncode(resultChats));
+      final resultChats = chats
+          .map((c) => {
+                'id': c.id,
+                'user': c.user,
+                'name': c.name,
+                'pet_name': c.petName,
+                'supplier': {
+                  'id': c.supplier.id,
+                  'name': c.supplier.name,
+                  'logo': c.supplier.logo,
+                }
+              })
+          .toList();
+      return Response.ok(jsonEncode(resultChats));
+    } catch (e, s) {
+      log.error('Erro ao buscar chats do fornecedor ', e, s);
+      return Response.internalServerError();
+    }
+  }
+
+  @Route.put('/<chatId>/end-chat')
+  Future<Response> endChat(Request request, String chatId) async {
+    try {
+      await service.endChat(int.parse(chatId));
+      return Response.ok(jsonEncode({}));
+    } catch (e, s) {
+      log.error('Erro ao finalziar chat $chatId', e, s);
+      return Response.internalServerError();
+    }
   }
 
   Router get router => _$ChatControllerRouter(this);
