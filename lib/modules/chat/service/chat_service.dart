@@ -62,4 +62,8 @@ class ChatService implements IChatService {
   @override
   Future<List<Chat>> getChatsByUser(int user) =>
       repository.getChatsByUser(user);
+
+  @override
+  Future<List<Chat>> getChatsBySupplier(int supplier) =>
+      repository.getChatsBySupplier(supplier);
 }
